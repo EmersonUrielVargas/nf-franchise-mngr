@@ -52,7 +52,7 @@ subprojects {
 
 
     jacocoTestReport {
-        dependsOn test, 'pitest'
+        dependsOn test
         reports {
             xml.setRequired true
             xml.setOutputLocation layout.buildDirectory.file("reports/jacoco.xml")
@@ -62,7 +62,6 @@ subprojects {
     }
 
 }
-
 jacoco {
     toolVersion = "${jacocoVersion}"
     reportsDirectory.set(layout.buildDirectory.dir("reports"))

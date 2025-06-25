@@ -6,7 +6,6 @@ import co.com.franchises.model.enums.DomainExceptionsMessage;
 import co.com.franchises.model.exceptions.DomainException;
 import co.com.franchises.model.exceptions.EntityAlreadyExistException;
 import co.com.franchises.model.exceptions.EntityNotFoundException;
-import co.com.franchises.model.franchise.Franchise;
 import co.com.franchises.model.franchise.gateways.FranchisePersistencePort;
 import co.com.franchises.model.helper.Validator;
 import co.com.franchises.usecase.branch.inputports.BranchServicePort;
@@ -50,8 +49,12 @@ public class BranchUseCase implements BranchServicePort {
                     .switchIfEmpty(Mono.error(new EntityAlreadyExistException(DomainExceptionsMessage.BRANCH_NAME_ALREADY_EXIST)))
                     .flatMap(exist ->
                             Mono.defer(()-> {
-                                branchFound.setName(name);
-                                return branchPersistencePort.upsertBranch(branchFound)
+                                Branch branchUpdated = Branch.builder()
+                                        .id(branchFound.getId())
+                                        .franchiseId(branchFound.getFranchiseId())
+                                        .name(name)
+                                        .build();
+                                return branchPersistencePort.upsertBranch(branchUpdated)
                                         .switchIfEmpty(Mono.error(new DomainException(DomainExceptionsMessage.BRANCH_CREATION_FAIL)));
                             })
                     )

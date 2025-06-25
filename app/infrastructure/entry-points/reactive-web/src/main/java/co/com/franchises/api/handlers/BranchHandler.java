@@ -2,6 +2,7 @@ package co.com.franchises.api.handlers;
 
 import co.com.franchises.api.dto.request.CreateBranchDto;
 import co.com.franchises.api.dto.request.CreateFranchiseDto;
+import co.com.franchises.api.dto.request.UpdateBranchNameDto;
 import co.com.franchises.api.mapper.BranchMapper;
 import co.com.franchises.api.mapper.FranchiseMapper;
 import co.com.franchises.api.util.ErrorDto;
@@ -41,6 +42,28 @@ public class BranchHandler {
                 .flatMap(branchCreated ->
                         ServerResponse.status(HttpStatus.CREATED)
                         .bodyValue(branchMapper.toBranchDtoRs(branchCreated)))
+                .onErrorResume(InvalidValueParamException.class, ex ->
+                        GenerateResponse.generateErrorResponse(HttpStatus.BAD_REQUEST, ex.getDomainExceptionsMessage()))
+                .onErrorResume(EntityNotFoundException.class, ex ->
+                        GenerateResponse.generateErrorResponse(HttpStatus.NOT_FOUND, ex.getDomainExceptionsMessage())
+                ).onErrorResume(DomainException.class, ex ->
+                        GenerateResponse.generateErrorResponse(HttpStatus.CONFLICT, ex.getDomainExceptionsMessage())
+                ).onErrorResume(exception -> {
+                    log.error("Unexpected error occurred: {}", exception.getMessage(), exception);
+                    return  GenerateResponse.generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, DomainExceptionsMessage.INTERNAL_ERROR);
+                });
+    }
+
+    public Mono<ServerResponse> updateBranchName(ServerRequest serverRequest) {
+        Long branchId = Long.valueOf(serverRequest.pathVariable("id"));
+        return serverRequest.bodyToMono(UpdateBranchNameDto.class)
+                .flatMap(updateBranchNameDto ->
+                        branchServicePort.updateBranchName(branchId, updateBranchNameDto.getName())
+                            .doOnSuccess( branchUpdated -> log.info("Branch office name updated successfully: {}", branchUpdated))
+                )
+                .flatMap(branchUpdated ->
+                        ServerResponse.status(HttpStatus.OK)
+                                .bodyValue(branchMapper.toBranchDtoRs(branchUpdated)))
                 .onErrorResume(InvalidValueParamException.class, ex ->
                         GenerateResponse.generateErrorResponse(HttpStatus.BAD_REQUEST, ex.getDomainExceptionsMessage()))
                 .onErrorResume(EntityNotFoundException.class, ex ->

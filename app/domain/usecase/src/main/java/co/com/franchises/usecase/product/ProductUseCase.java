@@ -64,6 +64,26 @@ public class ProductUseCase implements ProductServicePort {
     }
 
     @Override
+    public Mono<Product> updateNameProduct(Long productId, String name) {
+        Validator.validateNotNull(productId, DomainExceptionsMessage.PARAM_REQUIRED);
+        Validator.validateNotNull(name, DomainExceptionsMessage.PARAM_REQUIRED);
+        return productPersistencePort.findById(productId)
+                .switchIfEmpty( Mono.error(new EntityNotFoundException(DomainExceptionsMessage.PRODUCT_NOT_FOUND)))
+                .flatMap(productFound ->
+                        productPersistencePort.isExistProductInBranch(name, productFound.getBranchId())
+                        .filter(exist -> !exist)
+                        .switchIfEmpty(Mono.error(new EntityAlreadyExistException(DomainExceptionsMessage.PRODUCT_NAME_ALREADY_EXIST)))
+                        .flatMap(exist ->
+                                Mono.defer(()-> {
+                                    productFound.setName(name);
+                                    return productPersistencePort.upsertProduct(productFound)
+                                            .switchIfEmpty(Mono.error(new DomainException(DomainExceptionsMessage.PRODUCT_CREATION_FAIL)));
+                                })
+                        )
+                );
+    }
+
+    @Override
     public Mono<Void> deleteProduct(Long productId) {
         Validator.validateNotNull(productId, DomainExceptionsMessage.PARAM_REQUIRED);
         return productPersistencePort.findById(productId)

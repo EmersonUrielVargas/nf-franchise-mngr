@@ -9,6 +9,7 @@ public interface ProductServicePort {
 
     Mono<Product> createProduct(Product newProduct);
     Mono<Product> updateStockProduct(Long productId, Integer stock);
+    Mono<Product> updateNameProduct(Long productId, String name);
     Mono<Void> deleteProduct(Long productId);
     Flux<ProductRankItem> getRankProductsStockByBranch(Long franchiseId);
 }

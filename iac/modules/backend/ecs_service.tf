@@ -8,7 +8,6 @@ resource "aws_ecs_service" "franchise_app_service" {
   task_definition = aws_ecs_task_definition.franchise_app_task.arn
   launch_type     = "FARGATE"
   desired_count   = 1
-  #iam_role        = aws_iam_role.ecs_service_role.arn
 
   network_configuration {
     subnets          = var.service_subnet_ids
@@ -17,34 +16,10 @@ resource "aws_ecs_service" "franchise_app_service" {
   }
 
   load_balancer {
-    target_group_arn = aws_lb.franchise_alb.arn
+    target_group_arn = aws_lb_target_group.franchise_alb_tg.arn
     container_name   = "franchise-app"
     container_port   = 8080
   }
 
   depends_on = [aws_ecs_task_definition.franchise_app_task]
 }
-
-/*
-resource "aws_iam_role" "ecs_service_role" {
-  name = "ecs-franchise-app-service-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ecs.amazonaws.com"
-        }
-      },
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_service_role_policy_elb" {
-  role       = aws_iam_role.ecs_service_role.name
-  policy_arn = "arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess"
-}
-*/

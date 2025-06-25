@@ -49,16 +49,17 @@ public class ProductUseCase implements ProductServicePort {
         Validator.validatePositive(stock, DomainExceptionsMessage.STOCK_INVALID);
         return  productPersistencePort.findById(productId)
                 .switchIfEmpty(Mono.error(new EntityNotFoundException(DomainExceptionsMessage.PRODUCT_NOT_FOUND)))
-                .map(productFound -> {
-                    productFound.setStock(stock);
-                    return productFound;
-                })
-                .flatMap(productUpdate ->
+                .map(productFound ->
+                        Product.builder()
+                            .id(productFound.getId())
+                            .branchId(productFound.getBranchId())
+                            .name(productFound.getName())
+                            .stock(stock)
+                            .build()
+                ).flatMap(productUpdate ->
                     Mono.defer(()->
-                        Mono.defer(()->
-                            productPersistencePort.upsertProduct(productUpdate)
-                            .switchIfEmpty(Mono.error(new DomainException(DomainExceptionsMessage.PRODUCT_UPDATE_FAIL)))
-                        )
+                        productPersistencePort.upsertProduct(productUpdate)
+                        .switchIfEmpty(Mono.error(new DomainException(DomainExceptionsMessage.PRODUCT_UPDATE_FAIL)))
                     )
                 );
     }
@@ -75,8 +76,13 @@ public class ProductUseCase implements ProductServicePort {
                         .switchIfEmpty(Mono.error(new EntityAlreadyExistException(DomainExceptionsMessage.PRODUCT_NAME_ALREADY_EXIST)))
                         .flatMap(exist ->
                                 Mono.defer(()-> {
-                                    productFound.setName(name);
-                                    return productPersistencePort.upsertProduct(productFound)
+                                    Product productUpdate = Product.builder()
+                                            .id(productFound.getId())
+                                            .branchId(productFound.getBranchId())
+                                            .stock(productFound.getStock())
+                                            .name(name)
+                                            .build();
+                                    return productPersistencePort.upsertProduct(productUpdate)
                                             .switchIfEmpty(Mono.error(new DomainException(DomainExceptionsMessage.PRODUCT_CREATION_FAIL)));
                                 })
                         )

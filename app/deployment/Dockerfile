@@ -11,5 +11,4 @@ ENV DB_SCHEMA=${DB_SCHEMA}
 ENV DB_USERNAME=${DB_USERNAME}
 ENV DB_USER_PASSWORD=${DB_USER_PASSWORD}
 
-USER appuser
 ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS  -jar franchises.jar" ]

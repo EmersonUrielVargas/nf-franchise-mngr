@@ -26,11 +26,11 @@ resource "aws_ecs_task_definition" "franchise_app_task" {
       secrets = [
         {
           name      = "DB_USER_PASSWORD"
-          valueFrom = "arn:aws:secretsmanager:us-east-1:348800178380:secret:franchise-secrets-58Ao0M:SecretString:DB_USER_PASSWORD::"
+          valueFrom = "arn:aws:secretsmanager:us-east-1:348800178380:secret:franchise-secrets-58Ao0M:DB_USER_PASSWORD::"
         },
         {
           name      = "DB_USERNAME"
-          valueFrom = "arn:aws:secretsmanager:us-east-1:348800178380:secret:franchise-secrets-58Ao0M:SecretString:DB_USERNAME::"
+          valueFrom = "arn:aws:secretsmanager:us-east-1:348800178380:secret:franchise-secrets-58Ao0M:DB_USERNAME::"
         },
          {
           name      = "DB_SCHEMA"

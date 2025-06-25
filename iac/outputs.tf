@@ -17,3 +17,8 @@ output "ecr_repository_url" {
   description = "URL del repositorio ECR"
   value       = module.ecr.ecr_repository_url
 }
+
+output "alb_dns_name" {
+  description = "DNS público del ALB"
+  value       = module.backend.alb_dns_name
+}

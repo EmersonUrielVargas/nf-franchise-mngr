@@ -27,4 +27,7 @@ module "backend" {
   db_name = module.rds.db_name
   db_port = module.rds.db_port
   uri_container_img = module.ecr.ecr_repository_url
+  service_security_group_id = data.aws_security_group.default.id
+  service_subnet_ids = data.aws_subnets.default.ids
+  alb_vpc_id = data.aws_vpc.default.id
 }

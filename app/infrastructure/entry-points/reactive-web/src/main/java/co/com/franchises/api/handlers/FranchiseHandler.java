@@ -28,7 +28,7 @@ public class FranchiseHandler {
                         .doOnSuccess( franchiseSaved -> log.info("Franchise created successfully: {}", franchiseSaved.getName())))
                 .flatMap(franchise ->
                         ServerResponse.status(HttpStatus.CREATED)
-                        .bodyValue(franchiseMapper.toCreateFranchiseDto(franchise)))
+                        .bodyValue(franchiseMapper.toFranchiseDtoRs(franchise)))
                 .onErrorResume(DomainException.class, ex ->
                         ServerResponse.status(HttpStatus.CONFLICT)
                             .bodyValue(ErrorDto.builder()

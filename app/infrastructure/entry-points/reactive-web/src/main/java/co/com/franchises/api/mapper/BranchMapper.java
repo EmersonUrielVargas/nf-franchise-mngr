@@ -3,6 +3,7 @@ package co.com.franchises.api.mapper;
 
 import co.com.franchises.api.dto.request.CreateBranchDto;
 import co.com.franchises.api.dto.request.CreateFranchiseDto;
+import co.com.franchises.api.dto.response.BranchDtoRs;
 import co.com.franchises.model.branch.Branch;
 import co.com.franchises.model.franchise.Franchise;
 import org.mapstruct.InheritInverseConfiguration;
@@ -17,4 +18,5 @@ public interface BranchMapper {
 
     @InheritInverseConfiguration
     CreateBranchDto toCreateBranchDto(Branch branch);
+    BranchDtoRs toBranchDtoRs(Branch branch);
 }

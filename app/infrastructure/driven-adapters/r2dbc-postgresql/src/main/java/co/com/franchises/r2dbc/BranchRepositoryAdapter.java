@@ -21,7 +21,7 @@ public class BranchRepositoryAdapter extends ReactiveAdapterOperations<
     }
 
     @Override
-    public Mono<Branch> createBranch(Branch branch) {
+    public Mono<Branch> upsertBranch(Branch branch) {
         return save(branch).switchIfEmpty(Mono.empty()) ;
     }
 

@@ -15,6 +15,7 @@ public class ProductRouter {
     public RouterFunction<ServerResponse> productRoutes(ProductHandler handler) {
         return route(POST("/branch/{id}/product"), handler::createProduct)
             .and(route(DELETE("/product/{id}"), handler::deleteProduct))
-            .and(route(PATCH("/product/{id}/stock"), handler::updateStockProduct));
+            .and(route(PATCH("/product/{id}/stock"), handler::updateStockProduct))
+            .and(route(GET("/franchise/{id}/branch/top-products"), handler::getTopProductsByBranchInFranchise));
     }
 }

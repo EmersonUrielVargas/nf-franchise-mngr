@@ -30,7 +30,7 @@ public class BranchUseCase implements BranchServicePort {
                     .switchIfEmpty(Mono.error(new EntityAlreadyExistException(DomainExceptionsMessage.BRANCH_ALREADY_EXIST)))
                     .flatMap(exist ->
                             Mono.defer(()->
-                                branchPersistencePort.createBranch(newBranch)
+                                branchPersistencePort.upsertBranch(newBranch)
                                     .switchIfEmpty(Mono.error(new DomainException(DomainExceptionsMessage.BRANCH_CREATION_FAIL)))
                             )
                     )

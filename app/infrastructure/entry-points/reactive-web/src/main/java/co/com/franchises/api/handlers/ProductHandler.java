@@ -13,15 +13,18 @@ import co.com.franchises.model.exceptions.DomainException;
 import co.com.franchises.model.exceptions.EntityNotFoundException;
 import co.com.franchises.model.exceptions.InvalidValueParamException;
 import co.com.franchises.model.product.Product;
+import co.com.franchises.model.product.ProductRankItem;
 import co.com.franchises.model.product.gateways.ProductPersistencePort;
 import co.com.franchises.usecase.branch.inputports.BranchServicePort;
 import co.com.franchises.usecase.product.inputports.ProductServicePort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -82,6 +85,23 @@ public class ProductHandler {
                 ).flatMap(productUpdated ->
                         ServerResponse.status(HttpStatus.OK)
                                 .bodyValue(productMapper.toProductDto(productUpdated)))
+                .onErrorResume(InvalidValueParamException.class, ex ->
+                        GenerateResponse.generateErrorResponse(HttpStatus.BAD_REQUEST, ex.getDomainExceptionsMessage()))
+                .onErrorResume(EntityNotFoundException.class, ex ->
+                        GenerateResponse.generateErrorResponse(HttpStatus.NOT_FOUND, ex.getDomainExceptionsMessage()))
+                .onErrorResume(DomainException.class, ex ->
+                        GenerateResponse.generateErrorResponse(HttpStatus.CONFLICT, ex.getDomainExceptionsMessage()))
+                .onErrorResume(exception -> {
+                    log.error("Unexpected error occurred: {}", exception.getMessage(), exception);
+                    return  GenerateResponse.generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, DomainExceptionsMessage.INTERNAL_ERROR);
+                });
+    }
+
+    public Mono<ServerResponse> getTopProductsByBranchInFranchise(ServerRequest serverRequest) {
+        Long franchiseId = Long.valueOf(serverRequest.pathVariable("id"));
+        return ServerResponse.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(productServicePort.getRankProductsStockByBranch(franchiseId), ProductRankItem.class)
                 .onErrorResume(InvalidValueParamException.class, ex ->
                         GenerateResponse.generateErrorResponse(HttpStatus.BAD_REQUEST, ex.getDomainExceptionsMessage()))
                 .onErrorResume(EntityNotFoundException.class, ex ->

@@ -1,6 +1,7 @@
 package co.com.franchises.r2dbc;
 
 import co.com.franchises.model.product.Product;
+import co.com.franchises.model.product.ProductRankItem;
 import co.com.franchises.model.product.gateways.ProductPersistencePort;
 import co.com.franchises.r2dbc.entity.ProductEntity;
 import co.com.franchises.r2dbc.helper.ReactiveAdapterOperations;
@@ -8,6 +9,7 @@ import co.com.franchises.r2dbc.repository.ProductRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -43,6 +45,11 @@ public class ProductRepositoryAdapter extends ReactiveAdapterOperations<
                     log.debug("Error deleting product with ID {}: {}", productId, exception.getMessage());
                     return Mono.just(false);
                 });
+    }
+
+    @Override
+    public Flux<ProductRankItem> getRankProductsStockByBranch(Long franchiseId) {
+        return repository.getTopProductByBranchForFranchise(franchiseId);
     }
 
     @Override

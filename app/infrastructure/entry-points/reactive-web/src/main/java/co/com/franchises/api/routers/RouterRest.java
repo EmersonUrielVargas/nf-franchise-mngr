@@ -1,6 +1,7 @@
 package co.com.franchises.api.routers;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -15,10 +16,11 @@ public class RouterRest {
     private final FranchiseRouter franchiseRouter;
     @Bean
     public RouterFunction<ServerResponse> routerFunction(
-            RouterFunction<ServerResponse> franchiseRoutes
+            @Qualifier("franchiseRoutes") RouterFunction<ServerResponse> franchiseRoutes,
+            @Qualifier("branchesRoutes") RouterFunction<ServerResponse> branchesRoutes
     ) {
         return nest(path("/api/v1"),
-            franchiseRoutes
+            franchiseRoutes.and(branchesRoutes)
         );
     }
 }

@@ -6,6 +6,7 @@ buildscript {
 		jacocoVersion = '0.8.13'
         lombokVersion = '1.18.38'
         mapStructVersion = '1.5.3.Final'
+        openApiVersion = '2.8.9'
 	}
 }
 

@@ -20,7 +20,8 @@ public enum DomainExceptionsMessage {
     PRODUCT_DELETE_FAIL("0-010","An error occurred while removing the product", ""),
     PRODUCT_UPDATE_FAIL("0-011","An error occurred while updating the product data", ""),
     STOCK_INVALID("1-000","the stock must be a positive value", ""),
-    PARAM_REQUIRED("0-012","The params required cannot be null or empty", "");
+    PARAM_REQUIRED("0-012","The params required cannot be null or empty", ""),
+    FRANCHISE_WITHOUT_BRANCH_OFFICES("0-013","The franchise is empty and not contains branch offices", "");
 
     private final String code;
     private final String message;

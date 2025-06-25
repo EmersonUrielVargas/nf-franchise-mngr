@@ -5,17 +5,22 @@ import co.com.franchises.model.enums.DomainExceptionsMessage;
 import co.com.franchises.model.exceptions.DomainException;
 import co.com.franchises.model.exceptions.EntityAlreadyExistException;
 import co.com.franchises.model.exceptions.EntityNotFoundException;
+import co.com.franchises.model.franchise.gateways.FranchisePersistencePort;
 import co.com.franchises.model.helper.Validator;
 import co.com.franchises.model.product.Product;
+import co.com.franchises.model.product.ProductRankItem;
 import co.com.franchises.model.product.gateways.ProductPersistencePort;
 import co.com.franchises.usecase.product.inputports.ProductServicePort;
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
 public class ProductUseCase implements ProductServicePort {
     private final ProductPersistencePort productPersistencePort;
     private final BranchPersistencePort branchPersistencePort;
+    private final FranchisePersistencePort franchisePersistencePort;
+
 
     public Mono<Product> createProduct(Product newProduct) {
         Validator.validateNotNull(newProduct.getBranchId(), DomainExceptionsMessage.PARAM_REQUIRED);
@@ -71,4 +76,15 @@ public class ProductUseCase implements ProductServicePort {
                     )
                 ).then();
     }
+
+    @Override
+    public Flux<ProductRankItem> getRankProductsStockByBranch(Long franchiseId) {
+        Validator.validateNotNull(franchiseId, DomainExceptionsMessage.PARAM_REQUIRED);
+        return franchisePersistencePort.findById(franchiseId)
+                .switchIfEmpty( Mono.error(new EntityNotFoundException(DomainExceptionsMessage.FRANCHISE_NOT_FOUND)))
+                .thenMany(productPersistencePort.getRankProductsStockByBranch(franchiseId)
+                        .switchIfEmpty(Mono.error(new DomainException(DomainExceptionsMessage.FRANCHISE_WITHOUT_BRANCH_OFFICES)))
+                );
+    }
+
 }

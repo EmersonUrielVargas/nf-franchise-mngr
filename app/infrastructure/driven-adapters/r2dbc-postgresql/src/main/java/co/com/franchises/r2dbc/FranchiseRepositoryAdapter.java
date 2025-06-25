@@ -21,7 +21,7 @@ public class FranchiseRepositoryAdapter extends ReactiveAdapterOperations<
     }
 
     @Override
-    public Mono<Franchise> createFranchise(Franchise franchise) {
+    public Mono<Franchise> upsertFranchise(Franchise franchise) {
         return repository.save(toData(franchise))
                 .map(this::toEntity);
     }

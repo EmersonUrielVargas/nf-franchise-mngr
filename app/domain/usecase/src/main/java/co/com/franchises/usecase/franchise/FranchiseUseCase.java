@@ -26,7 +26,7 @@ public class FranchiseUseCase implements FranchiseServicePort {
                 .flatMap(existingFranchise -> Mono.error(new EntityAlreadyExistException(DomainExceptionsMessage.FRANCHISE_ALREADY_EXIST)))
                 .switchIfEmpty(
                         Mono.defer(()->
-                                franchisePersistencePort.createFranchise(franchise)
+                                franchisePersistencePort.upsertFranchise(franchise)
                                 .switchIfEmpty(Mono.error(new DomainException(DomainExceptionsMessage.FRANCHISE_CREATION_FAIL)))
                         ))
                 .cast(Franchise.class);

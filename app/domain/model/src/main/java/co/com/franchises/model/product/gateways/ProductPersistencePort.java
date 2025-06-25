@@ -5,7 +5,7 @@ import reactor.core.publisher.Mono;
 
 public interface ProductPersistencePort {
 
-    Mono<Product> createProduct(Product product);
+    Mono<Product> upsertProduct(Product product);
     Mono<Product> findById(Long productId);
     Mono<Boolean> isExistProductInBranch(String productName, Long branchId);
     Mono<Boolean> deleteProduct(Long productId);

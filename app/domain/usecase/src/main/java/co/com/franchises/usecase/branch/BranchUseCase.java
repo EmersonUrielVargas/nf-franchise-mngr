@@ -7,6 +7,7 @@ import co.com.franchises.model.exceptions.DomainException;
 import co.com.franchises.model.exceptions.EntityAlreadyExistException;
 import co.com.franchises.model.exceptions.EntityNotFoundException;
 import co.com.franchises.model.franchise.gateways.FranchisePersistencePort;
+import co.com.franchises.model.helper.Validator;
 import co.com.franchises.usecase.branch.inputports.BranchServicePort;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
@@ -19,6 +20,8 @@ public class BranchUseCase implements BranchServicePort {
 
     @Override
     public Mono<Branch> createBranch(Branch newBranch) {
+        Validator.validateNotNull(newBranch.getName(), DomainExceptionsMessage.PARAM_REQUIRED);
+        Validator.validateNotNull(newBranch.getFranchiseId(), DomainExceptionsMessage.PARAM_REQUIRED);
         return franchisePersistencePort.findById(newBranch.getFranchiseId())
                 .switchIfEmpty( Mono.error(new EntityNotFoundException(DomainExceptionsMessage.FRANCHISE_NOT_FOUND)))
                 .flatMap(franchise ->

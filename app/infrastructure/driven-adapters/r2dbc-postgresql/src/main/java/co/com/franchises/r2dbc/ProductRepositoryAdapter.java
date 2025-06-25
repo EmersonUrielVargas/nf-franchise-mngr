@@ -24,7 +24,7 @@ public class ProductRepositoryAdapter extends ReactiveAdapterOperations<
 
 
     @Override
-    public Mono<Product> createProduct(Product product) {
+    public Mono<Product> upsertProduct(Product product) {
         return save(product).switchIfEmpty(Mono.empty());
     }
 

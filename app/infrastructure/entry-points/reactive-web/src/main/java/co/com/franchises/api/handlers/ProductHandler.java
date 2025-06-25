@@ -1,17 +1,18 @@
 package co.com.franchises.api.handlers;
 
 import co.com.franchises.api.dto.request.CreateBranchDto;
-import co.com.franchises.api.dto.request.CreateFranchiseDto;
+import co.com.franchises.api.dto.request.CreateProductDto;
 import co.com.franchises.api.mapper.BranchMapper;
-import co.com.franchises.api.mapper.FranchiseMapper;
+import co.com.franchises.api.mapper.ProductMapper;
 import co.com.franchises.api.util.ErrorDto;
 import co.com.franchises.model.branch.Branch;
-import co.com.franchises.model.branch.gateways.BranchPersistencePort;
 import co.com.franchises.model.enums.DomainExceptionsMessage;
 import co.com.franchises.model.exceptions.DomainException;
 import co.com.franchises.model.exceptions.EntityNotFoundException;
+import co.com.franchises.model.product.Product;
+import co.com.franchises.model.product.gateways.ProductPersistencePort;
 import co.com.franchises.usecase.branch.inputports.BranchServicePort;
-import co.com.franchises.usecase.franchise.inputports.FranchiseServicePort;
+import co.com.franchises.usecase.product.inputports.ProductServicePort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,22 +24,24 @@ import reactor.core.publisher.Mono;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class BranchHandler {
-    private final BranchServicePort branchServicePort;
-    private final BranchMapper branchMapper;
+public class ProductHandler {
+    private final ProductServicePort productServicePort;
+    private final ProductMapper productMapper;
 
-    public Mono<ServerResponse> createBranch(ServerRequest serverRequest) {
-        Long franchiseId = Long.valueOf(serverRequest.pathVariable("id"));
-        return serverRequest.bodyToMono(CreateBranchDto.class)
-                .flatMap(createFranchiseDto ->{
-                    Branch branchToCreate = branchMapper.toBranch(createFranchiseDto);
-                    branchToCreate.setFranchiseId(franchiseId);
-                    return  branchServicePort.createBranch(branchToCreate)
-                            .doOnSuccess( branchCreated -> log.info("Branch office created successfully: {}", branchToCreate));
+    public Mono<ServerResponse> createProduct(ServerRequest serverRequest) {
+        Long branchId = Long.valueOf(serverRequest.pathVariable("id"));
+        return serverRequest.bodyToMono(CreateProductDto.class)
+                .map(createProductDto -> {
+                    Product productToCreate = productMapper.toProduct(createProductDto);
+                    productToCreate.setBranchId(branchId);
+                    return productToCreate;
                 })
-                .flatMap(branchCreated ->
+                .flatMap(product ->
+                        productServicePort.createProduct(product)
+                        .doOnSuccess( branchCreated -> log.info("Product created successfully: {}", product))
+                ).flatMap(productCreated ->
                         ServerResponse.status(HttpStatus.CREATED)
-                        .bodyValue(branchMapper.toBranchDtoRs(branchCreated)))
+                        .bodyValue(productMapper.toProductDto(productCreated)))
                 .onErrorResume(DomainException.class, ex ->
                         ServerResponse.status(HttpStatus.CONFLICT)
                             .bodyValue(ErrorDto.builder()

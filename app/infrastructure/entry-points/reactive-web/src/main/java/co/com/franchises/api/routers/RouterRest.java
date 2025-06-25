@@ -17,10 +17,11 @@ public class RouterRest {
     @Bean
     public RouterFunction<ServerResponse> routerFunction(
             @Qualifier("franchiseRoutes") RouterFunction<ServerResponse> franchiseRoutes,
-            @Qualifier("branchesRoutes") RouterFunction<ServerResponse> branchesRoutes
+            @Qualifier("branchesRoutes") RouterFunction<ServerResponse> branchesRoutes,
+            @Qualifier("productRoutes") RouterFunction<ServerResponse> productRoutes
     ) {
         return nest(path("/api/v1"),
-            franchiseRoutes.and(branchesRoutes)
+            franchiseRoutes.and(branchesRoutes).and(productRoutes)
         );
     }
 }

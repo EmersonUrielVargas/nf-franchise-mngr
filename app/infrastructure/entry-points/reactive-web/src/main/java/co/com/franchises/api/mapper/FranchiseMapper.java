@@ -2,6 +2,7 @@ package co.com.franchises.api.mapper;
 
 
 import co.com.franchises.api.dto.request.CreateFranchiseDto;
+import co.com.franchises.api.dto.response.FranchiseDtoRs;
 import co.com.franchises.model.franchise.Franchise;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
@@ -15,4 +16,5 @@ public interface FranchiseMapper {
 
     @InheritInverseConfiguration
     CreateFranchiseDto toCreateFranchiseDto(Franchise franchise);
+    FranchiseDtoRs toFranchiseDtoRs(Franchise franchise);
 }

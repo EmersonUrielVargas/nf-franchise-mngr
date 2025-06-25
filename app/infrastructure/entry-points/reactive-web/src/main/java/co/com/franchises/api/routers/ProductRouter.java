@@ -16,6 +16,7 @@ public class ProductRouter {
         return route(POST("/branch/{id}/product"), handler::createProduct)
             .and(route(DELETE("/product/{id}"), handler::deleteProduct))
             .and(route(PATCH("/product/{id}/stock"), handler::updateStockProduct))
-            .and(route(GET("/franchise/{id}/branch/top-products"), handler::getTopProductsByBranchInFranchise));
+            .and(route(GET("/franchise/{id}/branch/top-products"), handler::getTopProductsByBranchInFranchise))
+            .and(route(PATCH("/product/{id}/name"), handler::updateNameProduct));
     }
 }

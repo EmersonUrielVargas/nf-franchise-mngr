@@ -3,6 +3,7 @@ package co.com.franchises.usecase.franchise;
 import co.com.franchises.model.enums.DomainExceptionsMessage;
 import co.com.franchises.model.exceptions.DomainException;
 import co.com.franchises.model.exceptions.EntityAlreadyExistException;
+import co.com.franchises.model.exceptions.EntityNotFoundException;
 import co.com.franchises.model.franchise.Franchise;
 import co.com.franchises.model.franchise.gateways.FranchisePersistencePort;
 import co.com.franchises.model.helper.Validator;
@@ -30,5 +31,25 @@ public class FranchiseUseCase implements FranchiseServicePort {
                                 .switchIfEmpty(Mono.error(new DomainException(DomainExceptionsMessage.FRANCHISE_CREATION_FAIL)))
                         ))
                 .cast(Franchise.class);
+    }
+
+    @Override
+    public Mono<Franchise> updateFranchiseName(Long franchiseId, String name) {
+        Validator.validateNotNull(name, DomainExceptionsMessage.PARAM_REQUIRED);
+        Validator.validateNotNull(franchiseId, DomainExceptionsMessage.PARAM_REQUIRED);
+        return  franchisePersistencePort.findById(franchiseId)
+                .switchIfEmpty( Mono.error(new EntityNotFoundException(DomainExceptionsMessage.FRANCHISE_NOT_FOUND)))
+                .flatMap(franchiseFound ->
+                    franchisePersistencePort.findByName(name)
+                    .flatMap(existingFranchise -> Mono.error(new EntityAlreadyExistException(DomainExceptionsMessage.FRANCHISE_NAME_ALREADY_EXIST)))
+                    .switchIfEmpty(
+                        Mono.defer(()->{
+                            franchiseFound.setName(name);
+                            return franchisePersistencePort.upsertFranchise(franchiseFound)
+                                    .switchIfEmpty(Mono.error(new DomainException(DomainExceptionsMessage.FRANCHISE_CREATION_FAIL)));
+                        }
+                    ))
+                    .cast(Franchise.class)
+                );
     }
 }

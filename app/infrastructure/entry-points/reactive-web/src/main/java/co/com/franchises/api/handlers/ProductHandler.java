@@ -2,6 +2,7 @@ package co.com.franchises.api.handlers;
 
 import co.com.franchises.api.dto.request.CreateBranchDto;
 import co.com.franchises.api.dto.request.CreateProductDto;
+import co.com.franchises.api.dto.request.UpdateProductNameDto;
 import co.com.franchises.api.dto.request.UpdateStockProductDto;
 import co.com.franchises.api.mapper.BranchMapper;
 import co.com.franchises.api.mapper.ProductMapper;
@@ -109,6 +110,27 @@ public class ProductHandler {
                 .onErrorResume(DomainException.class, ex ->
                         GenerateResponse.generateErrorResponse(HttpStatus.CONFLICT, ex.getDomainExceptionsMessage()))
                 .onErrorResume(exception -> {
+                    log.error("Unexpected error occurred: {}", exception.getMessage(), exception);
+                    return  GenerateResponse.generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, DomainExceptionsMessage.INTERNAL_ERROR);
+                });
+    }
+
+    public Mono<ServerResponse> updateNameProduct(ServerRequest serverRequest){
+        Long productId = Long.valueOf(serverRequest.pathVariable("id"));
+        return serverRequest.bodyToMono(UpdateProductNameDto.class)
+                .flatMap(updateProductNameDto ->
+                        productServicePort.updateNameProduct(productId, updateProductNameDto.getName())
+                                .doOnSuccess( product -> log.info("Product name updated successfully: {}", product))
+                ).flatMap(productUpdated ->
+                        ServerResponse.status(HttpStatus.OK)
+                                .bodyValue(productMapper.toProductDto(productUpdated)))
+                .onErrorResume(InvalidValueParamException.class, ex ->
+                        GenerateResponse.generateErrorResponse(HttpStatus.BAD_REQUEST, ex.getDomainExceptionsMessage()))
+                .onErrorResume(EntityNotFoundException.class, ex ->
+                        GenerateResponse.generateErrorResponse(HttpStatus.NOT_FOUND, ex.getDomainExceptionsMessage())
+                ).onErrorResume(DomainException.class, ex ->
+                        GenerateResponse.generateErrorResponse(HttpStatus.CONFLICT, ex.getDomainExceptionsMessage())
+                ).onErrorResume(exception -> {
                     log.error("Unexpected error occurred: {}", exception.getMessage(), exception);
                     return  GenerateResponse.generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, DomainExceptionsMessage.INTERNAL_ERROR);
                 });

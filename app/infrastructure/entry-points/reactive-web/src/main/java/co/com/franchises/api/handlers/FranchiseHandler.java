@@ -1,6 +1,8 @@
 package co.com.franchises.api.handlers;
 
 import co.com.franchises.api.dto.request.CreateFranchiseDto;
+import co.com.franchises.api.dto.request.UpdateBranchNameDto;
+import co.com.franchises.api.dto.request.UpdateFranchiseNameDto;
 import co.com.franchises.api.mapper.FranchiseMapper;
 import co.com.franchises.api.util.ErrorDto;
 import co.com.franchises.api.util.GenerateResponse;
@@ -32,6 +34,25 @@ public class FranchiseHandler {
                 .flatMap(franchise ->
                         ServerResponse.status(HttpStatus.CREATED)
                         .bodyValue(franchiseMapper.toFranchiseDtoRs(franchise)))
+                .onErrorResume(InvalidValueParamException.class, ex ->
+                        GenerateResponse.generateErrorResponse(HttpStatus.BAD_REQUEST, ex.getDomainExceptionsMessage()))
+                .onErrorResume(DomainException.class, ex ->
+                        GenerateResponse.generateErrorResponse(HttpStatus.CONFLICT, ex.getDomainExceptionsMessage())
+                ).onErrorResume(exception -> {
+                    log.error("Unexpected error occurred: {}", exception.getMessage(), exception);
+                    return  GenerateResponse.generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, DomainExceptionsMessage.INTERNAL_ERROR);
+                });
+    }
+
+    public Mono<ServerResponse> updateNameFranchise(ServerRequest serverRequest) {
+        Long franchiseId = Long.valueOf(serverRequest.pathVariable("id"));
+        return serverRequest.bodyToMono(UpdateFranchiseNameDto.class)
+                .flatMap(updateFranchiseNameDto ->
+                        franchiseServicePort.updateFranchiseName(franchiseId,updateFranchiseNameDto.getName())
+                                .doOnSuccess( franchiseSaved -> log.info("Franchise name updated successfully: {}", franchiseSaved)))
+                .flatMap(franchise ->
+                        ServerResponse.status(HttpStatus.OK)
+                                .bodyValue(franchiseMapper.toFranchiseDtoRs(franchise)))
                 .onErrorResume(InvalidValueParamException.class, ex ->
                         GenerateResponse.generateErrorResponse(HttpStatus.BAD_REQUEST, ex.getDomainExceptionsMessage()))
                 .onErrorResume(DomainException.class, ex ->

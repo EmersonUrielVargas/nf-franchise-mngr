@@ -29,4 +29,4 @@ management:
       probes:
         enabled: true
 cors:
-  allowed-origins: *
+  allowed-origins: "*"

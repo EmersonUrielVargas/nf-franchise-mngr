@@ -13,12 +13,12 @@ spring:
     include: null
 adapters:
   r2dbc:
-    host: "localhost"
-    port: 5432
-    database: "emerson.vargas"
-    schema: "franchises_app"
-    username: "franchises_app_user"
-    password: "kj5BEBMr"
+    host: ${DB_HOST}
+    port: ${DB_PORT}
+    database: ${DB_DATABASE}
+    schema: ${DB_SCHEMA}
+    username: ${DB_USERNAME}
+    password: ${DB_USER_PASSWORD}
 management:
   endpoints:
     web:
@@ -29,4 +29,4 @@ management:
       probes:
         enabled: true
 cors:
-  allowed-origins: "http://localhost:4200,http://localhost:8080"
+  allowed-origins: ${ALLOWED_ORIGINS}

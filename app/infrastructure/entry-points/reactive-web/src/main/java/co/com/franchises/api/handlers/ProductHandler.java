@@ -5,6 +5,7 @@ import co.com.franchises.api.dto.request.CreateProductDto;
 import co.com.franchises.api.mapper.BranchMapper;
 import co.com.franchises.api.mapper.ProductMapper;
 import co.com.franchises.api.util.ErrorDto;
+import co.com.franchises.api.util.GenerateResponse;
 import co.com.franchises.model.branch.Branch;
 import co.com.franchises.model.enums.DomainExceptionsMessage;
 import co.com.franchises.model.exceptions.DomainException;
@@ -42,31 +43,27 @@ public class ProductHandler {
                 ).flatMap(productCreated ->
                         ServerResponse.status(HttpStatus.CREATED)
                         .bodyValue(productMapper.toProductDto(productCreated)))
-                .onErrorResume(DomainException.class, ex ->
-                        ServerResponse.status(HttpStatus.CONFLICT)
-                            .bodyValue(ErrorDto.builder()
-                                    .code(ex.getDomainExceptionsMessage().getCode())
-                                    .message(ex.getDomainExceptionsMessage().getMessage())
-                                    .param(ex.getDomainExceptionsMessage().getParam())
-                                    .build()
-                            )
-                ).onErrorResume(EntityNotFoundException.class, ex ->
-                        ServerResponse.status(HttpStatus.NOT_FOUND)
-                                .bodyValue(ErrorDto.builder()
-                                        .code(ex.getDomainExceptionsMessage().getCode())
-                                        .message(ex.getDomainExceptionsMessage().getMessage())
-                                        .param(ex.getDomainExceptionsMessage().getParam())
-                                        .build()
-                                )
+                .onErrorResume(EntityNotFoundException.class, ex ->
+                        GenerateResponse.generateErrorResponse(HttpStatus.NOT_FOUND, ex.getDomainExceptionsMessage())
+                ).onErrorResume(DomainException.class, ex ->
+                        GenerateResponse.generateErrorResponse(HttpStatus.CONFLICT, ex.getDomainExceptionsMessage())
                 ).onErrorResume(exception -> {
                     log.error("Unexpected error occurred: {}", exception.getMessage(), exception);
-                    return  ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .bodyValue(ErrorDto.builder()
-                                    .code(DomainExceptionsMessage.INTERNAL_ERROR.getCode())
-                                    .message(DomainExceptionsMessage.INTERNAL_ERROR.getMessage())
-                                    .param(DomainExceptionsMessage.INTERNAL_ERROR.getParam())
-                                    .build()
-                            );
+                    return  GenerateResponse.generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, DomainExceptionsMessage.INTERNAL_ERROR);
+                });
+    }
+
+    public Mono<ServerResponse> deleteProduct(ServerRequest serverRequest){
+        Long productId = Long.valueOf(serverRequest.pathVariable("id"));
+        return productServicePort.deleteProduct(productId)
+                .then(ServerResponse.noContent().build())
+                .onErrorResume(EntityNotFoundException.class, ex ->
+                        GenerateResponse.generateErrorResponse(HttpStatus.NOT_FOUND, ex.getDomainExceptionsMessage())
+                ).onErrorResume(DomainException.class, ex ->
+                        GenerateResponse.generateErrorResponse(HttpStatus.CONFLICT, ex.getDomainExceptionsMessage())
+                ).onErrorResume(exception -> {
+                    log.error("Unexpected error occurred: {}", exception.getMessage(), exception);
+                    return  GenerateResponse.generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, DomainExceptionsMessage.INTERNAL_ERROR);
                 });
     }
 }

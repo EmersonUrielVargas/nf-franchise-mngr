@@ -3,8 +3,10 @@ package co.com.franchises.api.handlers;
 import co.com.franchises.api.dto.request.CreateFranchiseDto;
 import co.com.franchises.api.mapper.FranchiseMapper;
 import co.com.franchises.api.util.ErrorDto;
+import co.com.franchises.api.util.GenerateResponse;
 import co.com.franchises.model.enums.DomainExceptionsMessage;
 import co.com.franchises.model.exceptions.DomainException;
+import co.com.franchises.model.exceptions.EntityNotFoundException;
 import co.com.franchises.usecase.franchise.inputports.FranchiseServicePort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,22 +32,10 @@ public class FranchiseHandler {
                         ServerResponse.status(HttpStatus.CREATED)
                         .bodyValue(franchiseMapper.toFranchiseDtoRs(franchise)))
                 .onErrorResume(DomainException.class, ex ->
-                        ServerResponse.status(HttpStatus.CONFLICT)
-                            .bodyValue(ErrorDto.builder()
-                                    .code(ex.getDomainExceptionsMessage().getCode())
-                                    .message(ex.getDomainExceptionsMessage().getMessage())
-                                    .param(ex.getDomainExceptionsMessage().getParam())
-                                    .build()
-                            )
+                        GenerateResponse.generateErrorResponse(HttpStatus.CONFLICT, ex.getDomainExceptionsMessage())
                 ).onErrorResume(exception -> {
                     log.error("Unexpected error occurred: {}", exception.getMessage(), exception);
-                    return  ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .bodyValue(ErrorDto.builder()
-                                    .code(DomainExceptionsMessage.INTERNAL_ERROR.getCode())
-                                    .message(DomainExceptionsMessage.INTERNAL_ERROR.getMessage())
-                                    .param(DomainExceptionsMessage.INTERNAL_ERROR.getParam())
-                                    .build()
-                            );
+                    return  GenerateResponse.generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, DomainExceptionsMessage.INTERNAL_ERROR);
                 });
     }
 }

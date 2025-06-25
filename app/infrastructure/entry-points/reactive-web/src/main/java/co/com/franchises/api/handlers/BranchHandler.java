@@ -5,6 +5,7 @@ import co.com.franchises.api.dto.request.CreateFranchiseDto;
 import co.com.franchises.api.mapper.BranchMapper;
 import co.com.franchises.api.mapper.FranchiseMapper;
 import co.com.franchises.api.util.ErrorDto;
+import co.com.franchises.api.util.GenerateResponse;
 import co.com.franchises.model.branch.Branch;
 import co.com.franchises.model.branch.gateways.BranchPersistencePort;
 import co.com.franchises.model.enums.DomainExceptionsMessage;
@@ -39,31 +40,13 @@ public class BranchHandler {
                 .flatMap(branchCreated ->
                         ServerResponse.status(HttpStatus.CREATED)
                         .bodyValue(branchMapper.toBranchDtoRs(branchCreated)))
-                .onErrorResume(DomainException.class, ex ->
-                        ServerResponse.status(HttpStatus.CONFLICT)
-                            .bodyValue(ErrorDto.builder()
-                                    .code(ex.getDomainExceptionsMessage().getCode())
-                                    .message(ex.getDomainExceptionsMessage().getMessage())
-                                    .param(ex.getDomainExceptionsMessage().getParam())
-                                    .build()
-                            )
-                ).onErrorResume(EntityNotFoundException.class, ex ->
-                        ServerResponse.status(HttpStatus.NOT_FOUND)
-                                .bodyValue(ErrorDto.builder()
-                                        .code(ex.getDomainExceptionsMessage().getCode())
-                                        .message(ex.getDomainExceptionsMessage().getMessage())
-                                        .param(ex.getDomainExceptionsMessage().getParam())
-                                        .build()
-                                )
+                .onErrorResume(EntityNotFoundException.class, ex ->
+                        GenerateResponse.generateErrorResponse(HttpStatus.NOT_FOUND, ex.getDomainExceptionsMessage())
+                ).onErrorResume(DomainException.class, ex ->
+                        GenerateResponse.generateErrorResponse(HttpStatus.CONFLICT, ex.getDomainExceptionsMessage())
                 ).onErrorResume(exception -> {
                     log.error("Unexpected error occurred: {}", exception.getMessage(), exception);
-                    return  ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .bodyValue(ErrorDto.builder()
-                                    .code(DomainExceptionsMessage.INTERNAL_ERROR.getCode())
-                                    .message(DomainExceptionsMessage.INTERNAL_ERROR.getMessage())
-                                    .param(DomainExceptionsMessage.INTERNAL_ERROR.getParam())
-                                    .build()
-                            );
+                    return  GenerateResponse.generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, DomainExceptionsMessage.INTERNAL_ERROR);
                 });
     }
 }

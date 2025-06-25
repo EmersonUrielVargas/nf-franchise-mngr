@@ -15,7 +15,9 @@ public enum DomainExceptionsMessage {
     BRANCH_CREATION_FAIL("0-005","An error occurred while creating a branch office", ""),
     BRANCH_NOT_FOUND("0-006","The branch office was not found", ""),
     PRODUCT_ALREADY_EXIST("0-007","Already exist a product in this branch office with the provided information", ""),
-    PRODUCT_CREATION_FAIL("0-008","An error occurred while creating the product", "");
+    PRODUCT_CREATION_FAIL("0-008","An error occurred while creating the product", ""),
+    PRODUCT_NOT_FOUND("0-009","The product was not found", ""),
+    PRODUCT_DELETE_FAIL("0-010","An error occurred while removing the product", "");
 
     private final String code;
     private final String message;

@@ -31,4 +31,17 @@ public class ProductUseCase implements ProductServicePort {
                         )
                 );
     }
+
+    @Override
+    public Mono<Void> deleteProduct(Long productId) {
+        return productPersistencePort.findById(productId)
+                .switchIfEmpty(Mono.error(new EntityNotFoundException(DomainExceptionsMessage.PRODUCT_NOT_FOUND)))
+                .flatMap(product ->
+                    Mono.defer(()->
+                        productPersistencePort.deleteProduct(productId)
+                        .filter(isDeleted -> isDeleted)
+                        .switchIfEmpty(Mono.error(new DomainException(DomainExceptionsMessage.PRODUCT_DELETE_FAIL)))
+                    )
+                ).then();
+    }
 }

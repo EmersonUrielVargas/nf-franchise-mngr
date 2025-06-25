@@ -69,3 +69,11 @@ To get a local copy up and running follow these steps.
 1. Right-click the class MainApplication and choose Run Application
 2. Open [http://localhost:8080/swagger-ui/index.html](http://localhost:8081/swagger-ui/index.html) in your web browser
 
+## Build docker image
+Run this command in root proyect
+    ```sh
+      
+      docker build -t franchise-app-registry -f ./deployment/Dockerfile .
+   
+   ```
+ 

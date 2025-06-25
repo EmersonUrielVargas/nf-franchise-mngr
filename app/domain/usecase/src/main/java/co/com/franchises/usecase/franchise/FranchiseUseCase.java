@@ -5,6 +5,7 @@ import co.com.franchises.model.exceptions.DomainException;
 import co.com.franchises.model.exceptions.EntityAlreadyExistException;
 import co.com.franchises.model.franchise.Franchise;
 import co.com.franchises.model.franchise.gateways.FranchisePersistencePort;
+import co.com.franchises.model.helper.Validator;
 import co.com.franchises.usecase.franchise.inputports.FranchiseServicePort;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
@@ -17,6 +18,7 @@ public class FranchiseUseCase implements FranchiseServicePort {
 
     @Override
     public Mono<Franchise> createFranchise(String name) {
+        Validator.validateNotNull(name, DomainExceptionsMessage.PARAM_REQUIRED);
         Franchise franchise = Franchise.builder()
                 .name(name)
                 .build();

@@ -7,6 +7,7 @@ import co.com.franchises.api.util.GenerateResponse;
 import co.com.franchises.model.enums.DomainExceptionsMessage;
 import co.com.franchises.model.exceptions.DomainException;
 import co.com.franchises.model.exceptions.EntityNotFoundException;
+import co.com.franchises.model.exceptions.InvalidValueParamException;
 import co.com.franchises.usecase.franchise.inputports.FranchiseServicePort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,8 @@ public class FranchiseHandler {
                 .flatMap(franchise ->
                         ServerResponse.status(HttpStatus.CREATED)
                         .bodyValue(franchiseMapper.toFranchiseDtoRs(franchise)))
+                .onErrorResume(InvalidValueParamException.class, ex ->
+                        GenerateResponse.generateErrorResponse(HttpStatus.BAD_REQUEST, ex.getDomainExceptionsMessage()))
                 .onErrorResume(DomainException.class, ex ->
                         GenerateResponse.generateErrorResponse(HttpStatus.CONFLICT, ex.getDomainExceptionsMessage())
                 ).onErrorResume(exception -> {

@@ -11,6 +11,7 @@ import co.com.franchises.model.branch.gateways.BranchPersistencePort;
 import co.com.franchises.model.enums.DomainExceptionsMessage;
 import co.com.franchises.model.exceptions.DomainException;
 import co.com.franchises.model.exceptions.EntityNotFoundException;
+import co.com.franchises.model.exceptions.InvalidValueParamException;
 import co.com.franchises.usecase.branch.inputports.BranchServicePort;
 import co.com.franchises.usecase.franchise.inputports.FranchiseServicePort;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,8 @@ public class BranchHandler {
                 .flatMap(branchCreated ->
                         ServerResponse.status(HttpStatus.CREATED)
                         .bodyValue(branchMapper.toBranchDtoRs(branchCreated)))
+                .onErrorResume(InvalidValueParamException.class, ex ->
+                        GenerateResponse.generateErrorResponse(HttpStatus.BAD_REQUEST, ex.getDomainExceptionsMessage()))
                 .onErrorResume(EntityNotFoundException.class, ex ->
                         GenerateResponse.generateErrorResponse(HttpStatus.NOT_FOUND, ex.getDomainExceptionsMessage())
                 ).onErrorResume(DomainException.class, ex ->

@@ -1,0 +1,16 @@
+package co.com.franchises.api.dto.request;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder(toBuilder = true)
+@AllArgsConstructor
+@NoArgsConstructor
+public class UpdateStockProductDto {
+    @NotNull
+    private Integer stock;
+}

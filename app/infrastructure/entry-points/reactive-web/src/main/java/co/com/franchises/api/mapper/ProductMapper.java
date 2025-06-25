@@ -2,6 +2,7 @@ package co.com.franchises.api.mapper;
 
 
 import co.com.franchises.api.dto.request.CreateProductDto;
+import co.com.franchises.api.dto.request.UpdateStockProductDto;
 import co.com.franchises.api.dto.response.ProductDtoRs;
 import co.com.franchises.model.product.Product;
 import org.mapstruct.InheritInverseConfiguration;

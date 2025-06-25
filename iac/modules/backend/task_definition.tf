@@ -15,7 +15,7 @@ resource "aws_ecs_task_definition" "franchise_app_task" {
   container_definitions = jsonencode([
     {
       name      = "franchise-app"
-      image     = "${var.uri_container_img}:2.0"
+      image     = "${var.uri_container_img}:3.0"
       essential = true
       portMappings = [
         {

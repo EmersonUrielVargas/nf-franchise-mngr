@@ -32,4 +32,10 @@ public class FranchiseRepositoryAdapter extends ReactiveAdapterOperations<
                 .map(this::toEntity)
                 .switchIfEmpty(Mono.empty());
     }
+
+    @Override
+    public Mono<Franchise> findById(Long franchiseId) {
+        return super.findById(franchiseId)
+                .switchIfEmpty(Mono.empty());
+    }
 }

@@ -23,7 +23,6 @@ public class PostgreSQLConnectionPool {
 
 	@Bean
 	public ConnectionPool getConnectionConfig(PostgresqlConnectionProperties properties) {
-        System.out.println("Porpiedades del bd :" + properties.username()+":"+ properties.password()+":"+ properties.host()+":"+properties.port()+":"+properties.database()+":"+properties.schema());
 		PostgresqlConnectionConfiguration dbConfiguration = PostgresqlConnectionConfiguration.builder()
                 .host(properties.host())
                 .port(properties.port())
@@ -32,7 +31,6 @@ public class PostgreSQLConnectionPool {
                 .username(properties.username())
                 .password(properties.password())
                 .build();
-        System.out.println("Configuración de la base de datos: " + dbConfiguration);
         ConnectionPoolConfiguration poolConfiguration = ConnectionPoolConfiguration.builder()
                 .connectionFactory(new PostgresqlConnectionFactory(dbConfiguration))
                 .name(DEFAULT_NAME_CONNECTIONS_POOL)

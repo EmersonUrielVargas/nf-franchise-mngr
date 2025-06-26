@@ -1,7 +1,7 @@
 locals {
-  task_definition_family   = "franchise-app-task"
-  task_SO_family = "LINUX"
-  task_cpu_architecture = "ARM64"
+  task_definition_family = "franchise-app-task"
+  task_SO_family         = "LINUX"
+  task_cpu_architecture  = "ARM64"
 }
 
 resource "aws_ecs_task_definition" "franchise_app_task" {
@@ -23,6 +23,14 @@ resource "aws_ecs_task_definition" "franchise_app_task" {
           hostPort      = 8080
         }
       ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.franchise_app.name
+          awslogs-region        = "us-east-1"
+          awslogs-stream-prefix = "ecs"
+        }
+      }
       secrets = [
         {
           name      = "DB_USER_PASSWORD"
@@ -32,7 +40,7 @@ resource "aws_ecs_task_definition" "franchise_app_task" {
           name      = "DB_USERNAME"
           valueFrom = "arn:aws:secretsmanager:us-east-1:348800178380:secret:franchise-secrets-58Ao0M:DB_USERNAME::"
         },
-         {
+        {
           name      = "DB_SCHEMA"
           valueFrom = aws_ssm_parameter.db_schema.arn
         },
@@ -86,4 +94,9 @@ resource "aws_iam_role_policy_attachment" "ecs_secretsmanager_access" {
 resource "aws_iam_role_policy_attachment" "ecs_ssm_access" {
   role       = aws_iam_role.ecs_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess"
+}
+
+resource "aws_cloudwatch_log_group" "franchise_app" {
+  name              = "/ecs/franchise-app"
+  retention_in_days = 7
 }

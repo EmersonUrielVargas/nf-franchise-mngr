@@ -7,13 +7,13 @@ resource "aws_lb" "franchise_alb" {
 }
 
 resource "aws_lb_target_group" "franchise_alb_tg" {
-  name     = "franchise-tg"
-  port     = 8080
-  protocol = "HTTP"
-  vpc_id   = var.alb_vpc_id
+  name        = "franchise-tg"
+  port        = 8080
+  protocol    = "HTTP"
+  vpc_id      = var.alb_vpc_id
   target_type = "ip"
   health_check {
-    path = "/"
+    path     = "/"
     protocol = "HTTP"
   }
 }

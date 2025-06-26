@@ -1,5 +1,6 @@
 package co.com.franchises.api.handlers;
 
+import co.com.franchises.api.constants.GeneralConstants;
 import co.com.franchises.api.dto.request.CreateBranchDto;
 import co.com.franchises.api.dto.request.CreateProductDto;
 import co.com.franchises.api.dto.request.UpdateProductNameDto;
@@ -36,7 +37,7 @@ public class ProductHandler {
     private final ProductMapper productMapper;
 
     public Mono<ServerResponse> createProduct(ServerRequest serverRequest) {
-        Long branchId = Long.valueOf(serverRequest.pathVariable("id"));
+        Long branchId = Long.valueOf(serverRequest.pathVariable(GeneralConstants.PATH_PARAMETER_ID_NAME));
         return serverRequest.bodyToMono(CreateProductDto.class)
                 .map(createProductDto -> {
                     Product productToCreate = productMapper.toProduct(createProductDto);
@@ -56,13 +57,13 @@ public class ProductHandler {
                 ).onErrorResume(DomainException.class, ex ->
                         GenerateResponse.generateErrorResponse(HttpStatus.CONFLICT, ex.getDomainExceptionsMessage())
                 ).onErrorResume(exception -> {
-                    log.error("Unexpected error occurred: {}", exception.getMessage(), exception);
+                    log.error(GeneralConstants.DEFAULT_ERROR_MESSAGE_LOG, exception.getMessage(), exception);
                     return  GenerateResponse.generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, DomainExceptionsMessage.INTERNAL_ERROR);
                 });
     }
 
     public Mono<ServerResponse> deleteProduct(ServerRequest serverRequest){
-        Long productId = Long.valueOf(serverRequest.pathVariable("id"));
+        Long productId = Long.valueOf(serverRequest.pathVariable(GeneralConstants.PATH_PARAMETER_ID_NAME));
         return productServicePort.deleteProduct(productId)
                 .then(ServerResponse.noContent().build())
                 .onErrorResume(InvalidValueParamException.class, ex ->
@@ -72,13 +73,13 @@ public class ProductHandler {
                 ).onErrorResume(DomainException.class, ex ->
                         GenerateResponse.generateErrorResponse(HttpStatus.CONFLICT, ex.getDomainExceptionsMessage())
                 ).onErrorResume(exception -> {
-                    log.error("Unexpected error occurred: {}", exception.getMessage(), exception);
+                    log.error(GeneralConstants.DEFAULT_ERROR_MESSAGE_LOG, exception.getMessage(), exception);
                     return  GenerateResponse.generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, DomainExceptionsMessage.INTERNAL_ERROR);
                 });
     }
 
     public Mono<ServerResponse> updateStockProduct(ServerRequest serverRequest) {
-        Long productId = Long.valueOf(serverRequest.pathVariable("id"));
+        Long productId = Long.valueOf(serverRequest.pathVariable(GeneralConstants.PATH_PARAMETER_ID_NAME));
         return serverRequest.bodyToMono(UpdateStockProductDto.class)
                 .flatMap(requestBody ->
                         productServicePort.updateStockProduct(productId, requestBody.getStock())
@@ -93,13 +94,13 @@ public class ProductHandler {
                 .onErrorResume(DomainException.class, ex ->
                         GenerateResponse.generateErrorResponse(HttpStatus.CONFLICT, ex.getDomainExceptionsMessage()))
                 .onErrorResume(exception -> {
-                    log.error("Unexpected error occurred: {}", exception.getMessage(), exception);
+                    log.error(GeneralConstants.DEFAULT_ERROR_MESSAGE_LOG, exception.getMessage(), exception);
                     return  GenerateResponse.generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, DomainExceptionsMessage.INTERNAL_ERROR);
                 });
     }
 
     public Mono<ServerResponse> getTopProductsByBranchInFranchise(ServerRequest serverRequest) {
-        Long franchiseId = Long.valueOf(serverRequest.pathVariable("id"));
+        Long franchiseId = Long.valueOf(serverRequest.pathVariable(GeneralConstants.PATH_PARAMETER_ID_NAME));
         return ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(productServicePort.getRankProductsStockByBranch(franchiseId), ProductRankItem.class)
@@ -110,13 +111,13 @@ public class ProductHandler {
                 .onErrorResume(DomainException.class, ex ->
                         GenerateResponse.generateErrorResponse(HttpStatus.CONFLICT, ex.getDomainExceptionsMessage()))
                 .onErrorResume(exception -> {
-                    log.error("Unexpected error occurred: {}", exception.getMessage(), exception);
+                    log.error(GeneralConstants.DEFAULT_ERROR_MESSAGE_LOG, exception.getMessage(), exception);
                     return  GenerateResponse.generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, DomainExceptionsMessage.INTERNAL_ERROR);
                 });
     }
 
     public Mono<ServerResponse> updateNameProduct(ServerRequest serverRequest){
-        Long productId = Long.valueOf(serverRequest.pathVariable("id"));
+        Long productId = Long.valueOf(serverRequest.pathVariable(GeneralConstants.PATH_PARAMETER_ID_NAME));
         return serverRequest.bodyToMono(UpdateProductNameDto.class)
                 .flatMap(updateProductNameDto ->
                         productServicePort.updateNameProduct(productId, updateProductNameDto.getName())
@@ -131,7 +132,7 @@ public class ProductHandler {
                 ).onErrorResume(DomainException.class, ex ->
                         GenerateResponse.generateErrorResponse(HttpStatus.CONFLICT, ex.getDomainExceptionsMessage())
                 ).onErrorResume(exception -> {
-                    log.error("Unexpected error occurred: {}", exception.getMessage(), exception);
+                    log.error(GeneralConstants.DEFAULT_ERROR_MESSAGE_LOG, exception.getMessage(), exception);
                     return  GenerateResponse.generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, DomainExceptionsMessage.INTERNAL_ERROR);
                 });
     }

@@ -1,10 +1,14 @@
 package co.com.franchises.api;
 
 import co.com.franchises.api.dto.request.CreateFranchiseDto;
+import co.com.franchises.api.dto.request.UpdateFranchiseNameDto;
 import co.com.franchises.api.dto.response.FranchiseDtoRs;
 import co.com.franchises.api.handlers.FranchiseHandler;
 import co.com.franchises.api.mapper.FranchiseMapper;
 import co.com.franchises.api.routers.FranchiseRouter;
+import co.com.franchises.model.enums.DomainExceptionsMessage;
+import co.com.franchises.model.exceptions.DomainException;
+import co.com.franchises.model.exceptions.InvalidValueParamException;
 import co.com.franchises.model.franchise.Franchise;
 import co.com.franchises.usecase.franchise.inputports.FranchiseServicePort;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -85,6 +89,76 @@ class FranchiseRestTest {
     }
 
 
+    @Nested
+    @DisplayName("PATCH /api/v1/franchise/{id}/name")
+    class updateFranchiseNameTests {
+        private final String pathTest = "/franchise/{id}/name";
+
+        @Test
+        void testUpdateFranchiseNameSuccessful() {
+            Long franchiseId = 12L;
+            String newName = "NuevoNombre";
+            UpdateFranchiseNameDto updateDto = UpdateFranchiseNameDto.builder().name(newName).build();
+            Franchise franchise = Franchise.builder().id(franchiseId).name(newName).build();
+            FranchiseDtoRs franchiseDto = FranchiseDtoRs.builder().id(franchiseId).name(newName).build();
+
+            when(franchiseServicePort.updateFranchiseName(franchiseId, newName)).thenReturn(Mono.just(franchise));
+            when(franchiseMapper.toFranchiseDtoRs(franchise)).thenReturn(franchiseDto);
+
+            webTestClient.patch()
+                    .uri(pathTest, franchiseId)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(updateDto)
+                    .exchange()
+                    .expectStatus().isOk()
+                    .expectBody(FranchiseDtoRs.class)
+                    .value(bodyResponse -> {
+                        Assertions.assertThat(bodyResponse).isEqualTo(franchiseDto);
+                    });
+        }
+    }
+
+    @Nested
+    @DisplayName("Errores en FranchiseHandler")
+    class FranchiseHandlerErrorTests {
+
+        @Test
+        void testCreateFranchiseInvalidValueParamException() throws Exception {
+            String franchiseName = "";
+            CreateFranchiseDto createFranchiseDto = CreateFranchiseDto.builder().name(franchiseName).build();
+            String jsonBody = objectMapper.writeValueAsString(createFranchiseDto);
+
+            when(franchiseServicePort.createFranchise(anyString()))
+                    .thenReturn(Mono.error(new InvalidValueParamException(DomainExceptionsMessage.PARAM_REQUIRED)));
+
+            webTestClient.post()
+                    .uri("/franchise")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(jsonBody)
+                    .exchange()
+                    .expectStatus().isBadRequest();
+        }
+
+        @Test
+        void testUpdateFranchiseNameDomainException() {
+            Long franchiseId = 1L;
+            String newName = "Nombre";
+            UpdateFranchiseNameDto updateDto = UpdateFranchiseNameDto.builder().name(newName).build();
+
+            when(franchiseServicePort.updateFranchiseName(franchiseId, newName))
+                    .thenReturn(Mono.error(new DomainException(DomainExceptionsMessage.FRANCHISE_CREATION_FAIL)));
+
+            webTestClient.patch()
+                    .uri("/franchise/{id}/name", franchiseId)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(updateDto)
+                    .exchange()
+                    .expectStatus().isEqualTo(409);
+        }
+    }
     /*
     @Test
     void testListenGETUseCase() {

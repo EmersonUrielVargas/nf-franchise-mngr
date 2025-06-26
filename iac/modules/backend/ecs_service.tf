@@ -1,5 +1,5 @@
 locals {
-  ecs_service_name   = "franchise-app-service"
+  ecs_service_name = "franchise-app-service"
 }
 
 resource "aws_ecs_service" "franchise_app_service" {

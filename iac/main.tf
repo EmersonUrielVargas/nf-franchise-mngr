@@ -15,19 +15,19 @@ module "rds" {
 }
 
 module "ecr" {
-  source = "./modules/ecr"
+  source   = "./modules/ecr"
   ecr_name = "franchise-app-registry"
 }
 
 module "backend" {
-  source = "./modules/backend"
-  ecs_cluster_name = "franchise-cluster"
-  bd_schema_name = "franchises_app"
-  db_endpoint = module.rds.db_endpoint
-  db_name = module.rds.db_name
-  db_port = module.rds.db_port
-  uri_container_img = module.ecr.ecr_repository_url
+  source                    = "./modules/backend"
+  ecs_cluster_name          = "franchise-cluster"
+  bd_schema_name            = "franchises_app"
+  db_endpoint               = module.rds.db_endpoint
+  db_name                   = module.rds.db_name
+  db_port                   = module.rds.db_port
+  uri_container_img         = module.ecr.ecr_repository_url
   service_security_group_id = data.aws_security_group.default.id
-  service_subnet_ids = data.aws_subnets.default.ids
-  alb_vpc_id = data.aws_vpc.default.id
+  service_subnet_ids        = data.aws_subnets.default.ids
+  alb_vpc_id                = data.aws_vpc.default.id
 }

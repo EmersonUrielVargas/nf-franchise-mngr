@@ -1,6 +1,6 @@
 output "db_endpoint" {
   description = "El endpoint de la instancia RDS PostgreSQL."
-  value       =  module.rds.db_endpoint
+  value       = module.rds.db_endpoint
 }
 
 output "db_port" {
@@ -10,7 +10,7 @@ output "db_port" {
 
 output "db_name" {
   description = "Nombre de la base de datos."
-  value = module.rds.db_name
+  value       = module.rds.db_name
 }
 
 output "ecr_repository_url" {

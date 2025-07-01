@@ -1,5 +1,6 @@
 package co.com.franchises.api;
 
+import co.com.franchises.api.constants.GeneralConstants;
 import co.com.franchises.api.dto.request.CreateFranchiseDto;
 import co.com.franchises.api.dto.request.UpdateFranchiseNameDto;
 import co.com.franchises.api.dto.response.FranchiseDtoRs;
@@ -17,13 +18,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
+
+import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -53,6 +60,14 @@ class FranchiseRestTest {
     @DisplayName("POST /api/v1/franchise")
     class createFranchiseTests {
         private final String pathTest ="/franchise";
+
+        static Stream<Arguments> exceptionAndStatusProvider() {
+            return Stream.of(
+                Arguments.of(new InvalidValueParamException(DomainExceptionsMessage.PARAM_REQUIRED), HttpStatus.BAD_REQUEST.value()),
+                Arguments.of(new DomainException(DomainExceptionsMessage.FRANCHISE_CREATION_FAIL), HttpStatus.CONFLICT.value()),
+                Arguments.of(new RuntimeException(GeneralConstants.DEFAULT_ERROR_MESSAGE_LOG), HttpStatus.INTERNAL_SERVER_ERROR.value())
+            );
+        }
 
         @Test
         void testCreateFranchiseSuccessful() throws Exception {
@@ -86,6 +101,24 @@ class FranchiseRestTest {
                     );
         }
 
+        @ParameterizedTest
+        @MethodSource("exceptionAndStatusProvider")
+        void testCreateFranchiseErrorCases( Exception exception, Integer statusCodeRs) throws Exception {
+            String franchiseName = "";
+            CreateFranchiseDto createFranchiseDto = CreateFranchiseDto.builder().name(franchiseName).build();
+            String jsonBody = objectMapper.writeValueAsString(createFranchiseDto);
+
+            when(franchiseServicePort.createFranchise(anyString()))
+                    .thenReturn(Mono.error(exception));
+
+            webTestClient.post()
+                    .uri(pathTest)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(jsonBody)
+                    .exchange()
+                    .expectStatus().isEqualTo(statusCodeRs);
+        }
     }
 
 
@@ -93,6 +126,14 @@ class FranchiseRestTest {
     @DisplayName("PATCH /api/v1/franchise/{id}/name")
     class updateFranchiseNameTests {
         private final String pathTest = "/franchise/{id}/name";
+
+        static Stream<Arguments> exceptionAndStatusProvider() {
+            return Stream.of(
+                Arguments.of(new InvalidValueParamException(DomainExceptionsMessage.PARAM_REQUIRED), HttpStatus.BAD_REQUEST.value()),
+                Arguments.of(new DomainException(DomainExceptionsMessage.FRANCHISE_NOT_FOUND), HttpStatus.CONFLICT.value()),
+                Arguments.of(new RuntimeException(GeneralConstants.DEFAULT_ERROR_MESSAGE_LOG), HttpStatus.INTERNAL_SERVER_ERROR.value())
+            );
+        }
 
         @Test
         void testUpdateFranchiseNameSuccessful() {
@@ -117,76 +158,25 @@ class FranchiseRestTest {
                         Assertions.assertThat(bodyResponse).isEqualTo(franchiseDto);
                     });
         }
-    }
 
-    @Nested
-    @DisplayName("Errores en FranchiseHandler")
-    class FranchiseHandlerErrorTests {
-
-        @Test
-        void testCreateFranchiseInvalidValueParamException() throws Exception {
-            String franchiseName = "";
-            CreateFranchiseDto createFranchiseDto = CreateFranchiseDto.builder().name(franchiseName).build();
-            String jsonBody = objectMapper.writeValueAsString(createFranchiseDto);
-
-            when(franchiseServicePort.createFranchise(anyString()))
-                    .thenReturn(Mono.error(new InvalidValueParamException(DomainExceptionsMessage.PARAM_REQUIRED)));
-
-            webTestClient.post()
-                    .uri("/franchise")
-                    .accept(MediaType.APPLICATION_JSON)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(jsonBody)
-                    .exchange()
-                    .expectStatus().isBadRequest();
-        }
-
-        @Test
-        void testUpdateFranchiseNameDomainException() {
+        @ParameterizedTest
+        @MethodSource("exceptionAndStatusProvider")
+        void testUpdateFranchiseNameErrorCases(Exception exception, Integer statusCodeRs) {
             Long franchiseId = 1L;
             String newName = "Nombre";
             UpdateFranchiseNameDto updateDto = UpdateFranchiseNameDto.builder().name(newName).build();
 
             when(franchiseServicePort.updateFranchiseName(franchiseId, newName))
-                    .thenReturn(Mono.error(new DomainException(DomainExceptionsMessage.FRANCHISE_CREATION_FAIL)));
+                    .thenReturn(Mono.error(exception));
 
             webTestClient.patch()
-                    .uri("/franchise/{id}/name", franchiseId)
+                    .uri(pathTest, franchiseId)
                     .accept(MediaType.APPLICATION_JSON)
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(updateDto)
                     .exchange()
-                    .expectStatus().isEqualTo(409);
+                    .expectStatus().isEqualTo(statusCodeRs);
         }
-    }
-    /*
-    @Test
-    void testListenGETUseCase() {
-        webTestClient.get()
-                .uri("/api/usecase/path")
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(String.class)
-                .value(userResponse -> {
-                            Assertions.assertThat(userResponse).isEmpty();
-                        }
-                );
-    }
 
-    @Test
-    void testListenGETOtherUseCase() {
-        webTestClient.get()
-                .uri("/api/otherusercase/path")
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(String.class)
-                .value(userResponse -> {
-                            Assertions.assertThat(userResponse).isEmpty();
-                        }
-                );
     }
-
-*/
 }

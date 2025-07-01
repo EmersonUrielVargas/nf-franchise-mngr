@@ -101,19 +101,22 @@ public class ProductHandler {
 
     public Mono<ServerResponse> getTopProductsByBranchInFranchise(ServerRequest serverRequest) {
         Long franchiseId = Long.valueOf(serverRequest.pathVariable(GeneralConstants.PATH_PARAMETER_ID_NAME));
-        return ServerResponse.ok()
+        return productServicePort.getRankProductsStockByBranch(franchiseId)
+            .collectList()
+            .flatMap(productList ->
+                ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(productServicePort.getRankProductsStockByBranch(franchiseId), ProductRankItem.class)
-                .onErrorResume(InvalidValueParamException.class, ex ->
-                        GenerateResponse.generateErrorResponse(HttpStatus.BAD_REQUEST, ex.getDomainExceptionsMessage()))
-                .onErrorResume(EntityNotFoundException.class, ex ->
-                        GenerateResponse.generateErrorResponse(HttpStatus.NOT_FOUND, ex.getDomainExceptionsMessage()))
-                .onErrorResume(DomainException.class, ex ->
-                        GenerateResponse.generateErrorResponse(HttpStatus.CONFLICT, ex.getDomainExceptionsMessage()))
-                .onErrorResume(exception -> {
-                    log.error(GeneralConstants.DEFAULT_ERROR_MESSAGE_LOG, exception.getMessage(), exception);
-                    return  GenerateResponse.generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, DomainExceptionsMessage.INTERNAL_ERROR);
-                });
+                .bodyValue(productList)
+            ).onErrorResume(InvalidValueParamException.class, ex ->
+                    GenerateResponse.generateErrorResponse(HttpStatus.BAD_REQUEST, ex.getDomainExceptionsMessage()))
+            .onErrorResume(EntityNotFoundException.class, ex ->
+                    GenerateResponse.generateErrorResponse(HttpStatus.NOT_FOUND, ex.getDomainExceptionsMessage()))
+            .onErrorResume(DomainException.class, ex ->
+                    GenerateResponse.generateErrorResponse(HttpStatus.CONFLICT, ex.getDomainExceptionsMessage()))
+            .onErrorResume(exception -> {
+                log.error(GeneralConstants.DEFAULT_ERROR_MESSAGE_LOG, exception.getMessage(), exception);
+                return  GenerateResponse.generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, DomainExceptionsMessage.INTERNAL_ERROR);
+            });
     }
 
     public Mono<ServerResponse> updateNameProduct(ServerRequest serverRequest){
